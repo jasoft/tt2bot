@@ -1,0 +1,16 @@
+[SOURCE]
+1\SOURCEFILE=E:/SynologyDrive/Drive/MyWork/MyDoc/\x53c9\x53c9\x96c6\x6210\x5f00\x53d1/TT2/xsp/src/main.lua
+2\SOURCEFILE=E:/SynologyDrive/Drive/MyWork/MyDoc/\x53c9\x53c9\x96c6\x6210\x5f00\x53d1/TT2/xsp/src/maps.lua
+size=3
+3\SOURCEFILE=E:/SynologyDrive/Drive/MyWork/MyDoc/\x53c9\x53c9\x96c6\x6210\x5f00\x53d1/TT2/xsp/src/utils.lua
+4\SOURCEFILE=E:/SynologyDrive/Drive/MyWork/MyDoc/\x53c9\x53c9\x96c6\x6210\x5f00\x53d1/TT2/xsp/src/utils.lua
+
+[UI]
+1\UIFILE=E:/SynologyDrive/Drive/MyWork/MyDoc/\x53c9\x53c9\x96c6\x6210\x5f00\x53d1/TT2/xsp/ui/ui.json
+size=1
+
+[RES]
+size=0
+
+[LIB]
+size=0
