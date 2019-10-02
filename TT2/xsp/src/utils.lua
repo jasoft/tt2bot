@@ -28,14 +28,10 @@ function isSimilarColor(c1,c2,degree)
     rdiff=math.abs(c1rgb.r-c2rgb.r)
     gdiff=math.abs(c1rgb.g-c2rgb.g)
     bdiff=math.abs(c1rgb.b-c2rgb.b)
-    print(("%f,%f,%f,%d"):format(rdiff,gdiff,bdiff,degree))
 	
     if (((rdiff/256*100+degree)<=100) and ((gdiff/256*100+degree)<=100) and ((bdiff/256*100+degree)<=100)) then
-	print(("%d,%d,%d"):format(rdiff/256*100+degree,gdiff,bdiff))
-		print(("%X and %X are the similar color"):format(c1,c2))
         return true
     else
-		print(("%X and %X are NOT the similar color"):format(c1,c2))
         return false
     end
 end
@@ -76,7 +72,19 @@ function print_r ( t )
     else
         sub_print_r(t,"  ")
     end
-    print()
+    print("")
+end
+
+function split (inputstr, sep)
+        if sep == nil then
+                sep = "%s"
+        end
+        local t={}
+        for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+                table.insert(t, str)
+        end
+        return t
 end
 
 table.print=print_r
+string.split=split

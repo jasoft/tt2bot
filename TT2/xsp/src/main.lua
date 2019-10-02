@@ -5,6 +5,12 @@ require 'utils'
 appid="com.gamehivecorp.taptitans2"
 local SHORT_DELAY=500
 local LONG_DELAY=2000
+GAMESETTINGS={
+	prestigeInterval=45,
+	levelupArtifacts=false,
+	noLevelupAtStartup=false,
+	useSkills={}	
+}
 
 
 --AA buff points iterator
@@ -46,11 +52,11 @@ function swipeUp(speed)
 		touchMove(1, 320, 700-i); 
 		mSleep(50);        --延迟
 	end
-	touchUp(1, 320, 500)
+	touchUp(1, 320, 200)
 end
 
 function swipeDown(speed)
-	touchDown(1, 320, 500)
+	touchDown(1, 320, 200)
 	for i = 0, 200, speed do   --使用for循环连续滑动
 		touchMove(1, 320, 500+i); 
 		mSleep(50);        --延迟
@@ -153,7 +159,11 @@ end
 function castSkills()
 	sysLog("Casting skills")
 	closeAllMenus()
-	table.foreach(GAME_LOCS.SKILL_BAR, function(i,v) tapw(v) end)
+	table.foreach(GAMESETTINGS.useSkills, function(i,v) 
+		print("Casting "..v)
+		tapw(GAME_LOCS.SKILL_BAR[v]) 
+		end
+	)
 	tapw(GAME_LOCS.GAME_SCREEN.call_hero)
 end
 
@@ -185,8 +195,12 @@ function prestige()
 	tapw(MASTER_LOCS.prestige_confirm,1,1000)
 	tapw(MASTER_LOCS.prestige_final,1,1000)
 	mSleep(30000)
+	GAMESETTINGS.noLevelupAtStartup=false
 	initGame()
-	levelupArtifacts()
+	if(GAMESETTINGS.levelupArtifacts) then
+		levelupArtifacts()
+	end
+	
 end
 
 function levelupArtifacts()
@@ -206,20 +220,25 @@ function showStatusBar(text)
 	lastStatusText=text
 end
 
+function collapseMenu()
+	if getColor(GAME_LOCS.PANELS.expand_collapse_bottom[1],GAME_LOCS.PANELS.expand_collapse_bottom[2])==GAME_COLORS.uparrow then
+		tapw(GAME_LOCS.PANELS.expand_collapse_bottom,1,2000)
+	end
+end
+
 function initGame()
 	initTime=os.time()
 	sysLog("Initialize game")
 	closeAllMenus()
 	local c=GAME_COLORS.skill_exists
 	local bExistingGame=isPointSimilarColor({c[1],c[2]},c[3],100) 
+
+	tapw(GAME_LOCS.BOTTOM_BAR.master,1,1000)
+	collapseMenu()
+	
 	if not bExistingGame then
 		sysLog("Fresh game")
-		tapw(GAME_LOCS.BOTTOM_BAR.master,1,1000)
-		if getColor(GAME_LOCS.PANELS.expand_collapse_bottom[1],GAME_LOCS.PANELS.expand_collapse_bottom[2])==GAME_COLORS.uparrow then
-			tapw(GAME_LOCS.PANELS.expand_collapse_bottom,1,2000)
-		end
 		scrollToTop()
-		closeAllMenus()
 		levelupSword()
 	end
 	levelupHeroes(true)
@@ -232,24 +251,50 @@ function waitForAnimation()
 	mSleep(1000)
 end
 
-ret,results=showUI("ui.json")
-if ret==0 then return end
+function loadSettings(results)
+	if(results.txtPrestige~=nil) then
+		GAMESETTINGS.prestigeInterval=tonumber(results.txtPrestige)
 
---table.print(results)
+	end
+	useSkills=split(results.cbgSkills,"@")	--0@3@5 like data format
+	for i,v in pairs(useSkills) do
+		table.insert(GAMESETTINGS.useSkills, SKILLS[v+1])
+	end
+	options=split(results.cbgOptions,"@")
+	table.foreach(options,
+		function(i,v)
+			if(v=="5") then
+				GAMESETTINGS.levelupArtifacts=true
+			end
+			if(v=="0") then
+				GAMESETTINGS.noLevelupAtStartup=true
+			end
 
-local PrestigeInterval=tonumber(results.txtPrestige)
-sysLog("Prestige interval is:"..PrestigeInterval)
-PrestigeInterval=PrestigeInterval or 45
-
-launchApp()
-mSleep(2000)
-initGame()
-while(true) do
-	local diff=os.difftime(os.time(),initTime)
-	local runMinutes=diff/60
-	showStatusBar(("Running %d of %d minutes."):format(runMinutes,PrestigeInterval))
-	if(runMinutes>PrestigeInterval) then prestige() end
-	castSkills()
-	levelupHeroes(false)
-	runTask(spamclicks,45)
+		end
+	)
+	table.print(GAMESETTINGS)
 end
+
+
+function main()
+	ret,results=showUI("ui.json")
+	if ret==0 then return end
+	loadSettings(results)
+	
+	launchApp()
+	mSleep(3000)
+	if(GAMESETTINGS.noLevelupAtStartup==false) then 
+		initGame()
+	end
+	while(true) do
+		local diff=os.difftime(os.time(),initTime)
+		local runMinutes=diff/60
+		showStatusBar(("Running %d of %d minutes."):format(runMinutes,GAMESETTINGS.prestigeInterval))
+		if(runMinutes>GAMESETTINGS.prestigeInterval) then prestige() end
+		castSkills()
+		levelupHeroes(false)
+		runTask(spamclicks,45)
+	end
+end
+
+main()
